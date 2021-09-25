@@ -11,8 +11,8 @@ public class Market {
     @GetMapping("/products")
     public String[] getAllProducts() { // @RequestParam String text
         return new String[] {
-            "goshe",
-            "teonte"
+            "First Item",
+            "Second Item"
         };
     }
 }
