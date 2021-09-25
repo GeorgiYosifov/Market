@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEvent
 
 import nbu.market.models.Product;
 
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 @RequestMapping("/api")
 public class Market {
@@ -72,7 +74,7 @@ public class Market {
  
     private void randomDelay() {
         try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
         } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
         }
