@@ -1,48 +1,42 @@
 "use strict";
+let products = [];
+const data = fetch(`http://localhost:8080/api/products`)
+  .then((response) => {
+    if (!response.ok) throw new Error(`Test problem `);
+    return response.json();
+  })
+  .then((data) => {
+    const itemsList = document.querySelector(".list-group");
+    products = data;
+    data.forEach((data) => {
+      const html = `<li class="list-group-item" id="${data.Id}">${data.Name}
+      <button type="button" class="btn btn-primary" id="btn">Primary</button></li>`;
+      itemsList.insertAdjacentHTML("beforeend", html);
+    });
 
-// const countryData = function (country) {
-//   const data = fetch(`https://restcountries.eu/rest/v2/name/${country}`)
-//     .then((response) => {
-//       if (!response.ok) throw new Error(`Test problem `);
-//       return response.json();
-//     })
-//     .then((data) => {
-//       console.log(
-//         `Hello there!The capital of the country is ${data[0].capital}`
-//       );
-//     })
-//     .catch(function (errorObject) {
-//       console.log(errorObject.message);
-//     });
-// };
-
-// countryData("portugal");
-
-const itemsList = document.querySelector(".items");
-
-const request = new XMLHttpRequest();
-request.open("GET", "https://randomuser.me/api/");
-request.send();
-
-request.addEventListener("load", function () {
-  const data = JSON.parse(this.responseText);
-  console.log(data);
-  const html = `
-  <ul class="list-group">
-  <li class="list-group-item"></li>
-  <li class="list-group-item">A third item</li>
-  <li class="list-group-item">A fourth item</li>
-  <li class="list-group-item">And a fifth one</li>
-</ul>
-
-<ul class="list-group">
-  <li class="list-group-item">Anem</li>
-  <li class="list-group-item">An item</li>
-  <li class="list-group-item">A second item</li>
-  <li class="list-group-item">A third item</li>
-  <li class="list-group-item">A fourth item</li>
-  <li class="list-group-item">And a fifth one</li>
-</ul>`;
-
-  itemsList.insertAdjacentHTML("beforeend", html);
-});
+    const liItemsBtn = document.querySelectorAll(".list-group-item>#btn");
+    liItemsBtn.forEach((item) => {
+      item.addEventListener("click", function (e) {
+        console.log(e.target.parentElement.id);
+        (async () => {
+          const rawResponse = await fetch(
+            "http://localhost:8080/api/products",
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(
+                products.find((p) => p.Id == e.target.parentElement.id)
+              ),
+            }
+          );
+          const content = await rawResponse.json();
+        })();
+      });
+    });
+  })
+  .catch(function (errorObject) {
+    console.log(errorObject.message);
+  });
