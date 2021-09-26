@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder;
 
 import nbu.market.models.Customer;
 import nbu.market.models.Product;
@@ -42,14 +43,17 @@ public class Market {
     {
         SseEmitter emitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-
         executor.execute(() -> 
         {
             try {
                 for(Product p : this.Products) {
                         randomDelay();
-                        p.Price -= 0.2;
-                        emitter.send(p);
+                        p.Price -= 0.1;
+                        SseEventBuilder eventBuilder = SseEmitter.event();
+                        emitter.send(eventBuilder
+                                        .data(p)
+                                        .name("reduce")
+                                        .id(String.valueOf(p.hashCode())));
                 }
                 emitter.complete();
             } catch (IOException e) {
@@ -77,7 +81,7 @@ public class Market {
     public Customer getCustomer(@PathVariable String id) {
         Customer result = new Customer();
         for (Customer c : this.Customers) {
-            if (c.Id == id)
+            if (c.Id.equals(id))
                 result = c;
         }
         return result;
