@@ -89,7 +89,16 @@ public class Market {
 
     @PostMapping("/product")
     public HttpStatus addToCart(@RequestBody Product product) {
-        this.Cart.add(product);
+        for (Product p : this.Cart) {
+            if (p.Id.equals(product.Id))
+                p.Quantity++;
+            else {
+                Product newProductForCart = new Product(product.Id, product.Name, product.Price, product.Category, 1);
+                this.Cart.add(newProductForCart);
+                break;
+            }
+        }
+            
         return HttpStatus.ACCEPTED;
     }    
 }

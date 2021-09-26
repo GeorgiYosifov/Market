@@ -2,7 +2,7 @@
 
 let products = [];
 
-fetch(`http://localhost:8080/api/customer/1`)
+fetch(`http://localhost:8080/api/customer/1`) // add random id
   .then(r => {
     if (!r.ok) throw new Error(`Test problem`);
     return r.json();
@@ -53,8 +53,21 @@ fetch(`http://localhost:8080/api/products`)
           );
           const content = await rawResponse.json();
           if (content === "ACCEPTED") {
-            document.querySelector('ul#products').removeChild(document.getElementById(p.Id));
-            // add to cart
+            const pQuantity = document.querySelector(`ul#products>li#${CSS.escape(p.Id)}>span#quantity`)
+            pQuantity.innerText--;
+            if (pQuantity.innerText.toString() === '0')
+              document.querySelector('ul#products').removeChild(document.getElementById(p.Id));
+            
+            const productLiInCart = document.querySelector(`ul#cart>li#${CSS.escape(p.Id)}`);
+            if (productLiInCart) {
+              productLiInCart.children.item(0).innerText++;
+            } else {
+              const html = `<li id="${p.Id}" class="list-group-item">
+                Name: ${p.Name} &nbsp;&nbsp;&nbsp;
+                Quantity: <span id=quantity>1</span> &nbsp;&nbsp;&nbsp;
+              </li>` 
+              document.getElementById('cart').insertAdjacentHTML('beforeend', html)
+            }
           }
         })(selectedProduct);
       });
