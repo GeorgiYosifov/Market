@@ -1,6 +1,7 @@
 package nbu.market.controllers;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,10 +31,12 @@ public class Market {
         new Customer("3", 7.0),
     };
 
-    private final Product[] Products = new Product[] {
-        new Product("123", "apple", 1.0, "nutritious", 2),
-        new Product("321", "meat", 10.0, "nutritious", 5),
-        new Product("213", "shampoo", 5.0, "non-nutritious", 2)
+    private ArrayList<Product> Products = new ArrayList<Product>() {
+        {
+            add(new Product("123", "apple", 1.0, "nutritious", 2));
+            add(new Product("321", "meat", 10.0, "nutritious", 5));
+            add(new Product("213", "shampoo", 5.0, "non-nutritious", 2));
+        }
     };
 
     private ArrayList<Product> Cart = new ArrayList<Product>();
@@ -47,13 +50,21 @@ public class Market {
         {
             try {
                 for(Product p : this.Products) {
-                        randomDelay();
+                    randomDelay();
+                    SseEventBuilder eventBuilder = SseEmitter.event();
+                    if (p.ExpireOn.after(new Date())) {
                         p.Price -= 0.1;
-                        SseEventBuilder eventBuilder = SseEmitter.event();
                         emitter.send(eventBuilder
-                                        .data(p)
-                                        .name("reduce")
-                                        .id(String.valueOf(p.hashCode())));
+                                    .data(p)
+                                    .name("reduce")
+                                    .id(String.valueOf(p.hashCode())));
+                    } else {
+                        this.Products.remove(p);
+                        emitter.send(eventBuilder
+                                    .data(p)
+                                    .name("remove")
+                                    .id(String.valueOf(p.hashCode())));
+                    }
                 }
                 emitter.complete();
             } catch (IOException e) {
@@ -73,7 +84,7 @@ public class Market {
     }
 
     @GetMapping("/products")
-    public Product[] getAllProducts() {
+    public ArrayList<Product> getAllProducts() {
         return this.Products;
     }
 
@@ -89,6 +100,11 @@ public class Market {
 
     @PostMapping("/product")
     public HttpStatus addToCart(@RequestBody Product product) {
+        for (Product p : this.Products) {
+            if (p.Id.equals(product.Id))
+                p.Quantity--;
+        }
+
         for (Product p : this.Cart) {
             if (p.Id.equals(product.Id))
                 p.Quantity++;

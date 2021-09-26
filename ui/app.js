@@ -2,7 +2,13 @@
 
 let products = [];
 
-fetch(`http://localhost:8080/api/customer/1`) // add random id
+let customerId = localStorage.getItem('customerId');
+if (localStorage.getItem('customerId') === '') {
+  customerId = Math.floor(Math.random() * 3);
+  localStorage.setItem('customerId', customerId);
+}
+
+fetch(`http://localhost:8080/api/customer/${customerId}`)
   .then(r => {
     if (!r.ok) throw new Error(`Test problem`);
     return r.json();
@@ -78,15 +84,19 @@ fetch(`http://localhost:8080/api/products`)
   });
   
 let source = new EventSource('http://localhost:8080/api/priceReducer');
+
 source.addEventListener('reduce', function(e) {
   const data = JSON.parse(e.data)
   const product = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}>span#price`)
   if (product)
     product.innerText = data.Price.toFixed(2) 
 }, false);
-// source.addEventListener('open', function(e) {
-//   // Connection was opened.
-// }, false);
+
+source.addEventListener('remove', function(e) {
+  const data = JSON.parse(e.data)
+  const p = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}`)
+  document.querySelector(`ul#products`).removeChild(p)
+}, false);
 
 // source.addEventListener('error', function(e) {
 //   if (e.readyState == EventSource.CLOSED) {
