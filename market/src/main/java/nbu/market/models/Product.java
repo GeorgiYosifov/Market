@@ -11,6 +11,8 @@ public class Product {
     public Date ExpireOn;
     public int Quantity;
 
+    public Product() {}
+
     public Product(String id, String name, Double price, String category, int quantity) {
         this.Id = id;
         this.Name = name;

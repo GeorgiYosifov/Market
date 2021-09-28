@@ -3,8 +3,8 @@
 let products = [];
 
 let customerId = localStorage.getItem('customerId');
-if (localStorage.getItem('customerId') === '') {
-  customerId = Math.floor(Math.random() * 3);
+if (!localStorage.getItem('customerId')) {
+  customerId = Math.floor(Math.random() * 4);
   localStorage.setItem('customerId', customerId);
 }
 
@@ -83,16 +83,16 @@ fetch(`http://localhost:8080/api/products`)
     console.log(err.message);
   });
   
-let source = new EventSource('http://localhost:8080/api/priceReducer');
+let sourcePrice = new EventSource('http://localhost:8080/api/priceReducer');
 
-source.addEventListener('reduce', function(e) {
+sourcePrice.addEventListener('reduce', function(e) {
   const data = JSON.parse(e.data)
-  const product = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}>span#price`)
-  if (product)
-    product.innerText = data.Price.toFixed(2) 
+  const productPrice = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}>span#price`)
+  if (productPrice)
+    productPrice.innerText = data.Price.toFixed(2) 
 }, false);
 
-source.addEventListener('remove', function(e) {
+sourcePrice.addEventListener('remove', function(e) {
   const data = JSON.parse(e.data)
   const p = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}`)
   document.querySelector(`ul#products`).removeChild(p)
@@ -103,3 +103,19 @@ source.addEventListener('remove', function(e) {
 //     // Connection was closed.
 //   }
 // }, false);
+
+let sourceQuantity = new EventSource('http://localhost:8080/api/sendToOthers');
+
+sourceQuantity.addEventListener('reduce', function(e) {
+  const data = JSON.parse(e.data)
+  const productQuantity = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}>span#quantity`)
+  if (productQuantity)
+    productQuantity.innerText = data.Quantity 
+}, false);
+
+sourceQuantity.addEventListener('remove', function(e) {
+  const data = JSON.parse(e.data)
+  const p = document.querySelector(`ul#products>li#${CSS.escape(data.Id)}`)
+  if (p)
+    document.querySelector(`ul#products`).removeChild(p)
+}, false);

@@ -25,8 +25,11 @@ import nbu.market.models.Product;
 @RequestMapping("/api")
 public class Market {
 
+    private Product productToSendToOthers = new Product();
+
     private final Customer[] Customers = new Customer[] {
-        new Customer("1", 5.0),
+        new Customer("0", 15.0),
+        new Customer("1", 8.0),
         new Customer("2", 10.0),
         new Customer("3", 7.0),
     };
@@ -101,8 +104,11 @@ public class Market {
     @PostMapping("/product")
     public HttpStatus addToCart(@RequestBody Product product) {
         for (Product p : this.Products) {
-            if (p.Id.equals(product.Id))
+            if (p.Id.equals(product.Id)) {
                 p.Quantity--;
+                productToSendToOthers = p;
+                this.sendToOthers();
+            }
         }
 
         for (Product p : this.Cart) {
@@ -114,9 +120,40 @@ public class Market {
                 break;
             }
         }
-            
+
         return HttpStatus.ACCEPTED;
-    }    
+    }
+    
+    @GetMapping("/sendToOthers")
+    public SseEmitter sendToOthers() {
+        SseEmitter emitter = new SseEmitter();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> 
+        {
+            try {
+                SseEventBuilder eventBuilder = SseEmitter.event();
+                if (productToSendToOthers.Quantity > 0) {
+                    emitter.send(eventBuilder
+                                .data(productToSendToOthers)
+                                .name("reduce")
+                                .id(String.valueOf(productToSendToOthers.hashCode())));
+                } else {
+                    this.Products.remove(productToSendToOthers);
+                    emitter.send(eventBuilder
+                                .data(productToSendToOthers)
+                                .name("remove")
+                                .id(String.valueOf(productToSendToOthers.hashCode())));
+                }
+                emitter.complete();
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+        });
+
+        executor.shutdown();
+        return emitter;
+    }
 }
 
  // @RequestParam String text
