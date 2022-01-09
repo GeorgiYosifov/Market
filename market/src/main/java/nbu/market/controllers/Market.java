@@ -36,7 +36,7 @@ public class Market {
 
     private ArrayList<Product> Products = new ArrayList<Product>() {
         {
-            add(new Product("123", "apple", 1.0, "nutritious", 2));
+            add(new Product("123", "apple", 6.0, "nutritious", 2));
             add(new Product("321", "meat", 10.0, "nutritious", 5));
             add(new Product("213", "shampoo", 5.0, "non-nutritious", 2));
         }
@@ -80,7 +80,7 @@ public class Market {
  
     private void randomDelay() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
